@@ -1,0 +1,161 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "bitwarden.api" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "bitwarden.api" . }}
+    app.kubernetes.io/component: api
+{{ include "bitwarden.labels" . | indent 4 }}
+{{- with .Values.component.api.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.component.api.deploymentStrategy | quote }}
+  selector:
+    matchLabels:
+      app: {{ template "bitwarden.api" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "bitwarden.api" . }}
+        app.kubernetes.io/component: api
+{{ include "bitwarden.labels" . | indent 8 }}
+    spec:
+      {{- if or .Values.component.api.nodeSelector .Values.general.nodeSelector }}
+      nodeSelector:
+        {{- if .Values.component.api.nodeSelector }}
+        {{ toYaml .Values.component.api.nodeSelector | nindent 8 }}
+        {{- else }}
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.component.api.tolerations .Values.general.tolerations }}
+      tolerations:
+        {{- if .Values.component.api.tolerations }}
+        {{ toYaml .Values.component.api.tolerations | nindent 8 }}
+        {{- else }}
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- if .Values.component.api.podServiceAccount }}
+      serviceAccount: {{ .Values.component.api.podServiceAccount | quote }}
+      serviceAccountName: {{ .Values.component.api.podServiceAccount | quote }}
+    {{- end }}
+    {{- if .Values.component.api.podSecurityContext }}
+      securityContext:
+{{ toYaml .Values.component.api.podSecurityContext | indent 8 }}
+    {{- end }}
+    {{- if .Values.volume.logs.enabled }}
+      initContainers:
+      - name: create-mount-subdir
+        command:
+          - "/bin/bash"
+          - "-c"
+        args: ['
+          mkdir -p /logs/api
+        ']
+        image: "{{ .Values.supportComponents.kubectl.image.name }}:{{ .Values.supportComponents.kubectl.image.tag }}"
+        volumeMounts:
+          - name: applogs
+            mountPath: /logs
+    {{- end }}
+      containers:
+      - name: {{ template "bitwarden.api" . }}
+        image: "{{ .Values.component.api.image.name }}:{{ default ( include "bitwarden.coreVersionDefault" nil ) .Values.general.coreVersionOverride }}"
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-config-map
+          - secretRef:
+              name: {{ .Values.secrets.secretName | quote }}
+          - secretRef:
+              name: {{ template "bitwarden.keyssecret" . }}
+          {{- if .Values.database.enabled }}
+          - secretRef:
+              name: {{ .Release.Name }}-sql-connection-string
+          {{- end }}
+        env:
+          - name: ASPNETCORE_URLS
+            value: http://+:5000
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 5000
+          initialDelaySeconds: 180
+        ports:
+        - containerPort: 5000
+        resources:
+{{ toYaml .Values.component.api.resources | indent 10 }}
+        volumeMounts:
+        - name: attachments
+          mountPath: /etc/bitwarden/core/attachments
+        - name: dataprotection
+          mountPath: /etc/bitwarden/core/aspnet-dataprotection
+        - name: licenses
+          mountPath: /etc/bitwarden/core/licenses
+        {{- if .Values.volume.logs.enabled }}
+        - name: applogs
+          mountPath: /etc/bitwarden/logs
+          subPath: api
+        {{- end }}
+        {{- if .Values.volume.caCertificates.enabled }}
+        - name: ca-certificates
+          mountPath: /etc/bitwarden/ca-certificates
+        {{- end }}
+        {{- if .Values.secrets.secretProviderClass }}
+        - name: secrets-store-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+        {{- end }}
+        securityContext:
+{{ toYaml .Values.component.api.securityContext | indent 10 }}
+      volumes:
+        - name: dataprotection
+          persistentVolumeClaim:
+            claimName: {{ default ( include "bitwarden.dataprotection" . ) .Values.volume.dataprotection.existingClaim }}
+        - name: attachments
+          persistentVolumeClaim:
+            claimName: {{ default ( include "bitwarden.attachments" . ) .Values.volume.attachments.existingClaim }}
+        - name: licenses
+          persistentVolumeClaim:
+            claimName: {{ default ( include "bitwarden.licenses" . ) .Values.volume.licenses.existingClaim }}
+        {{- if .Values.volume.logs.enabled }}
+        - name: applogs
+          persistentVolumeClaim:
+            claimName: {{ default ( include "bitwarden.applogs" . ) .Values.volume.logs.existingClaim }}
+        {{- end }}
+        {{- if .Values.volume.caCertificates.enabled }}
+        - name: ca-certificates
+          configMap:
+            name: {{ .Values.volume.caCertificates.configMapName }}
+        {{- end }}
+        {{- if .Values.secrets.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.secrets.secretProviderClass }}
+        {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "bitwarden.api" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: api
+{{ include "bitwarden.labels" . | indent 4 }}
+{{- with .Values.component.api.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  selector:
+    app: {{ template "bitwarden.api" . }}
+  ports:
+  - port: 5000
+    targetPort: 5000

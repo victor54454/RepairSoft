@@ -1,0 +1,520 @@
+# Optionnel - Remplace le nom du chart si désiré
+fullnameOverride: ""
+nameOverride: ""
+
+general:
+  # Nom de domaine pour le service
+  domain: "REPLACE"
+  ingress:
+    # Définir à false si vous utilisez un ingress personnalisé
+    enabled: true
+    # Valeurs actuellement supportées pour le type d'ingress : nginx
+    className: "nginx"
+     ## - Annotations à ajouter à la ressource Ingress.
+    annotations:
+      # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      # nginx.ingress.kubernetes.io/use-regex: "true"
+      # nginx.ingress.kubernetes.io/rewrite-target: /$1
+      # nginx.ingress.kubernetes.io/proxy-body-size: 500m
+      # nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      # nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+      # nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    ## - Labels à ajouter à la ressource Ingress
+    labels: {}
+    # Options de certificat
+    tls:
+      # Nom du secret du certificat TLS
+      name:
+      # Nom de l'émetteur de certificat du cluster (ex. Let's Encrypt) s'il existe
+      clusterIssuer:
+    # Configuration des chemins Ingress - Les exemples fournis sont pour Nginx. Des exemples avec d'autres fournisseurs Ingress sont dans le README du chart sur GitHub
+    paths:
+      web:
+        path: /(.*)
+        pathType: ImplementationSpecific
+      attachments:
+        path: /attachments/(.*)
+        pathType: ImplementationSpecific
+      api:
+        path: /api/(.*)
+        pathType: ImplementationSpecific
+      icons:
+        path: /icons/(.*)
+        pathType: ImplementationSpecific
+      notifications:
+        path: /notifications/(.*)
+        pathType: ImplementationSpecific
+      events:
+        path: /events/(.*)
+        pathType: ImplementationSpecific
+      scim:
+        path: /scim/(.*)
+        pathType: ImplementationSpecific
+      sso:
+        path: /(sso/.*)
+        pathType: ImplementationSpecific
+      identity:
+        path: /(identity/.*)
+        pathType: ImplementationSpecific
+      admin:
+        path: /(admin/?.*)
+        pathType: ImplementationSpecific
+
+  # Remplace les tags de version des conteneurs d'application. Ceux-ci seront versionnés avec le chart et n'ont pas besoin d'être modifiés dans la plupart des cas.
+  coreVersionOverride: ""
+  webVersionOverride: ""
+  # Désactive l'enregistrement de compte sur le coffre-fort web
+  disableUserRegistration: "false"
+  # Liste d'adresses email séparées par des virgules pour les utilisateurs Admin
+  admins: "false"
+  email:
+    # Adresse email utilisée pour les invitations, typiquement no-reply@smtp-host
+    replyToEmail: "no-reply@bitwarden.localhost"
+    # Le nom d'hôte de votre serveur SMTP (recommandé) ou l'adresse IP
+    smtpHost: "smtp.gmail.com"
+    # Le port SMTP utilisé par le serveur SMTP
+    smtpPort: "587"
+    # Si votre serveur SMTP utilise un protocole de chiffrement, "true" pour SSL, "false" pour TLS
+    smtpSsl: "false"
+    # Spécifiez true pour faire explicitement confiance au certificat présenté par le serveur SMTP (non recommandé en production).
+    smtpTrustServer: "false"
+    # Spécifiez true pour utiliser SSL (pas TLS) sur le port 25.
+    smtpSslOverride: "false"
+    # Spécifiez true pour forcer STARTTLS (TLS opportuniste).
+    smtpStartTls: "false"
+  sso:
+    enforceSsoPolicyForAllUsers: false
+  # Labels personnalisés à ajouter dans toute l'installation
+  labels: {}
+  # nodeSelector et tolerations définis ici s'appliqueront à tous les templates du chart Helm. Ils peuvent être remplacés individuellement
+  nodeSelector: {}
+  tolerations: []
+  # Spécifie le mode d'accès pour les revendications de volumes persistants. Cela ne devrait pas être changé dans la plupart des cas, et les valeurs autorisées sont seulement ReadWriteMany et ReadWriteOnce. Veuillez lire https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes pour mieux comprendre ces options avant de changer cette valeur.
+  volumeAccessMode: "ReadWriteMany"
+  # Définir à true pour permettre la communication entre votre serveur et notre système cloud. Cela active la synchronisation de facturation et de licence. Voir : https://bitwarden.com/help/self-host-an-organization/#step-4-setup-billing-and-license-sync
+  enableCloudCommunication: false
+  # Région cloud pour la synchronisation. Voir : https://bitwarden.com/help/families-for-enterprise-self-hosted/#step-1-enable-cloud-communication
+  cloudRegion: US
+
+# Spécifiez le nom de la classe de stockage partagé
+# Cette classe de stockage nécessite ReadWriteMany. Vous devrez fournir votre propre classe de stockage. Les classes de stockage avec des provisionneurs de volumes automatiques sont recommandées.
+sharedStorageClassName: "shared-storage"
+
+# Les secrets sont requis. Consultez le README du chart sur GitHub pour les détails sur la création de ces secrets
+secrets:
+  secretName: custom-secret
+  # Les secrets peuvent être créés soit via 'kubectl create secrets' soit en utilisant une classe de fournisseur de secrets. Si vous utilisez cette dernière, spécifiez le nom ici
+  secretProviderClass:
+
+# Paramètres pour les conteneurs de services individuels
+component:
+  # Le composant Admin
+  admin:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/admin
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  api:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/api
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  attachments:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/attachments
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  events:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/events
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  icons:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/icons
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  identity:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/identity
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  notifications:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/notifications
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  scim:
+    # SCIM est désactivé par défaut. Pour utiliser ce service, activez-le ci-dessous et définissez un chemin Ingress approprié
+    enabled: false
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/scim
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  sso:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/sso
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+  web:
+    # Labels de déploiement supplémentaires
+    labels: {}
+    # Optionnellement placer le déploiement sur des nœuds spécifiques
+    nodeSelector: {}
+    # Optionnellement ajouter des tolérances de taint
+    tolerations: []
+    # Nom de l'image, tag et politique de récupération
+    image:
+      name: ghcr.io/bitwarden/web
+    # Les exigences de ressources du pod. Vous pouvez les ajuster selon votre environnement
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "Recreate" ou "RollingUpdate". "RollingUpdate" est la valeur par défaut.
+    deploymentStrategy: RollingUpdate
+    # Ceci définira le contexte de sécurité du conteneur Kubernetes
+    securityContext:
+    # Ceci définira le contexte de sécurité du pod Kubernetes
+    podSecurityContext:
+    # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+    podServiceAccount:
+# Images utilisées pour les jobs et conteneurs d'initialisation
+supportComponents:
+  dbMigrator:
+    image:
+      name: ghcr.io/bitwarden/mssqlmigratorutility
+  certGenerator:
+    image:
+      name: docker.io/nginx
+      tag: 1.25.3
+  kubectl:
+    image:
+      name: bitnami/kubectl
+      tag: 1.21
+# Tailles des volumes de données pour les PVCs partagés
+volume:
+  dataprotection:
+    # Utiliser un PVC existant en spécifiant le nom.
+    # existingClaim: claimName
+    # Remplace le accessMode spécifié dans general.volumeAccessMode
+    # accessMode: ReadWriteOnce
+    # Remplace la storageClass spécifiée dans sharedStorageClassName
+    # storageClass: "shared-storage"
+    size: "1Gi"
+    labels: {}
+  attachments:
+    # Utiliser un PVC existant en spécifiant le nom.
+    # existingClaim: claimName
+    # Remplace le accessMode spécifié dans general.volumeAccessMode
+    # accessMode: ReadWriteOnce
+    # Remplace la storageClass spécifiée dans sharedStorageClassName
+    # storageClass: "shared-storage"
+    size: 1Gi
+    labels: {}
+  licenses:
+    # Utiliser un PVC existant en spécifiant le nom.
+    # existingClaim: claimName
+    # Remplace le accessMode spécifié dans general.volumeAccessMode
+    # accessMode: ReadWriteOnce
+    # Remplace la storageClass spécifiée dans sharedStorageClassName
+    # storageClass: "shared-storage"
+    size: 1Gi
+    labels: {}
+  logs:
+    # Les logs sont désactivés par défaut
+    enabled: false
+    # Utiliser un PVC existant en spécifiant le nom.
+    # existingClaim: claimName
+    # Remplace le accessMode spécifié dans general.volumeAccessMode
+    # accessMode: ReadWriteOnce
+    # Remplace la storageClass spécifiée dans sharedStorageClassName
+    # storageClass: "shared-storage"
+    size: 1Gi
+    labels: {}
+  caCertificates:
+    # Les certificats racine supplémentaires sont désactivés par défaut
+    enabled: false
+    # Charger les certificats personnalisés depuis la ConfigMap suivante
+    configMapName: cacert
+
+#
+# Configurer le compte de service pour les hooks de pré et post-installation
+#
+serviceAccount:
+  name: service-account
+  # Certaines instances nécessiteront la création d'un compte de service pré-déployé. Par exemple, les comptes de service activés AWS IAM doivent être créés en dehors du chart pour permettre la définition de permissions sur d'autres services AWS comme Secrets Manager
+  deployRolesOnly: false
+
+#
+# Configurer la base de données
+#
+database:
+  # déployer le pod de base de données ? si false, une chaîne de connexion à un serveur SQL devra être fournie via l'un des fournisseurs de configuration.
+  enabled: true
+  # Labels à ajouter au déploiement MSSQL
+  labels: {}
+  # Optionnellement placer le déploiement sur des nœuds spécifiques
+  nodeSelector: {}
+  # Optionnellement ajouter des tolérances de taint
+  tolerations: []
+  # Nom de l'image, tag et politique de récupération
+  image:
+    name: mcr.microsoft.com/mssql/server
+    # Tag de l'image à utiliser. (Par défaut à general.coreVersion)
+    tag: 2022-CU12-ubuntu-22.04
+  # Le conteneur est limité aux ressources ci-dessous. Ajustez selon votre environnement.
+  resources:
+    requests:
+      memory: "2G"
+      cpu: "100m"
+    limits:
+      memory: "2G"
+      cpu: "500m"
+
+  # Les volumes MSSQL pour les PVCs
+  volume:
+    backups:
+      # Utiliser un PVC existant en spécifiant le nom.
+      # existingClaim: claimName
+      # Remplace le accessMode spécifié dans general.volumeAccessMode
+      # accessMode: ReadWriteOnce
+      # Remplace la storageClass spécifiée dans sharedStorageClassName
+      # storageClass: "shared-storage"
+      size: 1Gi
+      labels: {}
+    data:
+      # Utiliser un PVC existant en spécifiant le nom.
+      # existingClaim: claimName
+      # Remplace le accessMode spécifié dans general.volumeAccessMode
+      # accessMode: ReadWriteOnce
+      # Remplace la storageClass spécifiée dans sharedStorageClassName
+      # storageClass: "shared-storage"
+      size: 10Gi
+      labels: {}
+    log:
+      # Utiliser un PVC existant en spécifiant le nom.
+      # existingClaim: claimName
+      # Remplace le accessMode spécifié dans general.volumeAccessMode
+      # accessMode: ReadWriteOnce
+      # Remplace la storageClass spécifiée dans sharedStorageClassName
+      # storageClass: "shared-storage"
+      size: 10Gi
+      labels: {}
+  # Spécifie la stratégie utilisée pour remplacer les anciens Pods par les nouveaux. La valeur peut être "OnDelete" ou "RollingUpdate". "OnDelete" est la valeur par défaut.
+  # Quand défini à OnDelete, le pod SQL ne sera pas recréé automatiquement lors de la mise à jour. Il doit être supprimé manuellement pour se mettre à jour.
+  updateStrategy: OnDelete
+  # Ceci définira le contexte de sécurité du conteneur Kubernetes
+  securityContext:
+  # Ceci définira le contexte de sécurité du pod Kubernetes (incluant fsGroup)
+  podSecurityContext:
+  # Exécute le pod sous un compte de service que vous créez. Ceci est particulièrement utile pour les déploiements OpenShift
+  podServiceAccount:
+
+# Vous pouvez spécifier des manifestes Kubernetes bruts qui seront appliqués avant ou après l'installation Helm de base.
+# Veuillez consulter le README du chart sur GitHub pour plus d'informations et d'exemples.
+rawManifests:
+  preInstall: []
+  # Ex. ajouter un certificat personnalisé à votre installation bitwarden.
+  # - apiVersion: v1
+  #   kind: ConfigMap
+  #   metadata:
+  #     name: cacert
+  #   data:
+  #     rootca.crt: |
+  #       -----BEGIN CERTIFICATE-----
+  #       xxxx
+  #       -----END CERTIFICATE-----
+  postInstall: []

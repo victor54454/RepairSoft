@@ -1,0 +1,146 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "bitwarden.notifications" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "bitwarden.notifications" . }}
+    app.kubernetes.io/component: notifications
+{{ include "bitwarden.labels" . | indent 4 }}
+{{- with .Values.component.notifications.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.component.notifications.deploymentStrategy | quote }}
+  selector:
+    matchLabels:
+      app: {{ template "bitwarden.notifications" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "bitwarden.notifications" . }}
+        app.kubernetes.io/component: notifications
+{{ include "bitwarden.labels" . | indent 8 }}
+    spec:
+      {{- if or .Values.component.notifications.nodeSelector .Values.general.nodeSelector }}
+      nodeSelector:
+        {{- if .Values.component.notifications.nodeSelector }}
+        {{ toYaml .Values.component.notifications.nodeSelector | nindent 8 }}
+        {{- else }}
+        {{ toYaml .Values.general.nodeSelector | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.component.notifications.tolerations .Values.general.tolerations }}
+      tolerations:
+        {{- if .Values.component.notifications.tolerations }}
+        {{ toYaml .Values.component.notifications.tolerations | nindent 8 }}
+        {{- else }}
+        {{ toYaml .Values.general.tolerations | nindent 8 }}
+        {{- end }}
+      {{- end }}
+    {{- if .Values.component.notifications.podServiceAccount }}
+      serviceAccount: {{ .Values.component.notifications.podServiceAccount | quote }}
+      serviceAccountName: {{ .Values.component.notifications.podServiceAccount | quote }}
+    {{- end }}
+    {{- if .Values.component.notifications.podSecurityContext }}
+      securityContext:
+{{ toYaml .Values.component.notifications.podSecurityContext | indent 8 }}
+    {{- end }}
+    {{- if .Values.volume.logs.enabled }}
+      initContainers:
+      - name: create-mount-subdir
+        command:
+          - "/bin/bash"
+          - "-c"
+        args: ['
+          mkdir -p /logs/notifications
+        ']
+        image: "{{ .Values.supportComponents.kubectl.image.name }}:{{ .Values.supportComponents.kubectl.image.tag }}"
+        volumeMounts:
+          - name: applogs
+            mountPath: /logs
+    {{- end }}
+      containers:
+      - name: {{ template "bitwarden.notifications" . }}
+        image: "{{ .Values.component.notifications.image.name }}:{{ default ( include "bitwarden.coreVersionDefault" nil ) .Values.general.coreVersionOverride }}"
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-config-map
+          - secretRef:
+              name: {{ .Values.secrets.secretName | quote }}
+          - secretRef:
+              name: {{ template "bitwarden.keyssecret" . }}
+          {{- if .Values.database.enabled }}
+          - secretRef:
+              name: {{ .Release.Name }}-sql-connection-string
+          {{- end }}
+        env:
+          - name: ASPNETCORE_URLS
+            value: http://+:5000
+        livenessProbe:
+          httpGet:
+            path: /alive
+            port: 5000
+          initialDelaySeconds: 180
+        ports:
+        - containerPort: 5000
+        resources:
+{{ toYaml .Values.component.notifications.resources | indent 10 }}
+        volumeMounts:
+        {{- if .Values.secrets.secretProviderClass }}
+        - name: secrets-store-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+        {{- end }}
+        {{- if .Values.volume.logs.enabled }}
+        - name: applogs
+          mountPath: /etc/bitwarden/logs
+          subPath: notifications
+        {{- end }}
+        {{- if .Values.volume.caCertificates.enabled }}
+        - name: ca-certificates
+          mountPath: /etc/bitwarden/ca-certificates
+        {{- end }}
+        securityContext:
+{{ toYaml .Values.component.notifications.securityContext | indent 10 }}
+      volumes:
+        {{- if .Values.secrets.secretProviderClass }}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.secrets.secretProviderClass }}
+        {{- end }}
+        {{- if .Values.volume.logs.enabled }}
+        - name: applogs
+          persistentVolumeClaim:
+            claimName: {{ default ( include "bitwarden.applogs" . ) .Values.volume.logs.existingClaim }}
+        {{- end }}
+        {{- if .Values.volume.caCertificates.enabled }}
+        - name: ca-certificates
+          configMap:
+            name: {{ .Values.volume.caCertificates.configMapName }}
+        {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "bitwarden.notifications" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/component: notifications
+{{ include "bitwarden.labels" . | indent 4 }}
+{{- with .Values.component.notifications.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  selector:
+    app: {{ template "bitwarden.notifications" . }}
+  ports:
+  - port: 5000
+    targetPort: 5000
