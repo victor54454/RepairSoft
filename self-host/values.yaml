@@ -4,21 +4,21 @@ nameOverride: ""
 
 general:
   # Nom de domaine pour le service
-  domain: "REPLACE"
+  domain: "test.bitwarden.local"
   ingress:
     # Définir à false si vous utilisez un ingress personnalisé
     enabled: true
     # Valeurs actuellement supportées pour le type d'ingress : nginx
     className: "nginx"
      ## - Annotations à ajouter à la ressource Ingress.
-    annotations:
-      # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      # nginx.ingress.kubernetes.io/use-regex: "true"
-      # nginx.ingress.kubernetes.io/rewrite-target: /$1
-      # nginx.ingress.kubernetes.io/proxy-body-size: 500m
-      # nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
-      # nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
-      # nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/proxy-body-size: 500m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
     ## - Labels à ajouter à la ressource Ingress
     labels: {}
     # Options de certificat
@@ -66,21 +66,14 @@ general:
   # Désactive l'enregistrement de compte sur le coffre-fort web
   disableUserRegistration: "false"
   # Liste d'adresses email séparées par des virgules pour les utilisateurs Admin
-  admins: "false"
+  admins: "admin@test.bitwarden.local"
   email:
-    # Adresse email utilisée pour les invitations, typiquement no-reply@smtp-host
-    replyToEmail: "no-reply@bitwarden.localhost"
-    # Le nom d'hôte de votre serveur SMTP (recommandé) ou l'adresse IP
-    smtpHost: "smtp.gmail.com"
-    # Le port SMTP utilisé par le serveur SMTP
-    smtpPort: "587"
-    # Si votre serveur SMTP utilise un protocole de chiffrement, "true" pour SSL, "false" pour TLS
+    replyToEmail: "noreply@localhost"
+    smtpHost: "localhost"
+    smtpPort: "25"
     smtpSsl: "false"
-    # Spécifiez true pour faire explicitement confiance au certificat présenté par le serveur SMTP (non recommandé en production).
-    smtpTrustServer: "false"
-    # Spécifiez true pour utiliser SSL (pas TLS) sur le port 25.
+    smtpTrustServer: "true"
     smtpSslOverride: "false"
-    # Spécifiez true pour forcer STARTTLS (TLS opportuniste).
     smtpStartTls: "false"
   sso:
     enforceSsoPolicyForAllUsers: false
@@ -94,11 +87,11 @@ general:
   # Définir à true pour permettre la communication entre votre serveur et notre système cloud. Cela active la synchronisation de facturation et de licence. Voir : https://bitwarden.com/help/self-host-an-organization/#step-4-setup-billing-and-license-sync
   enableCloudCommunication: false
   # Région cloud pour la synchronisation. Voir : https://bitwarden.com/help/families-for-enterprise-self-hosted/#step-1-enable-cloud-communication
-  cloudRegion: US
+  cloudRegion: UE
 
 # Spécifiez le nom de la classe de stockage partagé
 # Cette classe de stockage nécessite ReadWriteMany. Vous devrez fournir votre propre classe de stockage. Les classes de stockage avec des provisionneurs de volumes automatiques sont recommandées.
-sharedStorageClassName: "shared-storage"
+sharedStorageClassName: "local-path"
 
 # Les secrets sont requis. Consultez le README du chart sur GitHub pour les détails sur la création de ces secrets
 secrets:
@@ -414,8 +407,7 @@ volume:
     size: 1Gi
     labels: {}
   logs:
-    # Les logs sont désactivés par défaut
-    enabled: false
+    enabled: true
     # Utiliser un PVC existant en spécifiant le nom.
     # existingClaim: claimName
     # Remplace le accessMode spécifié dans general.volumeAccessMode
@@ -518,3 +510,24 @@ rawManifests:
   #       xxxx
   #       -----END CERTIFICATE-----
   postInstall: []
+
+
+# ========================================
+# CONFIGURATION DES SECRETS PERSONNALISÉS
+# ========================================
+bitwarden:
+  secret:
+    name: "custom-secret"
+    
+    #https://bitwarden.com/host
+    globalSettings__installation__id: "ac0f4a39-1b6e-4b2f-80f7-b32f00d2a53e"
+    globalSettings__installation__key: "AsNEcGdR0SRXcGd2Gwyh"
+    
+    globalSettings__mail__smtp__username: "test@localhost"
+    globalSettings__mail__smtp__password: "testpassword"
+    
+    globalSettings__yubico__clientId: ""
+    globalSettings__yubico__key: ""
+    globalSettings__hibpApiKey: ""
+    
+    SA_PASSWORD: "MonSuperMotDePasseSQL2024!"
