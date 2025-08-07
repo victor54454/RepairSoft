@@ -3,7 +3,7 @@ fullnameOverride: ""
 nameOverride: ""
 
 general:
-  domain: "192.168.10.167.nip.io"
+  domain: "192.168.10.167.nip.io"  
   ingress:
     enabled: true
     className: "nginx"
