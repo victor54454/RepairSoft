@@ -28,6 +28,7 @@ kubectl get secret -n bitwarden
 
 
 
-helm install bitwarden ./self-host/ --namespace bitwarden -f ./self-host/my-values.yaml --create-namespace
+helm upgrade bitwarden bitwarden/self-host --install --namespace bitwarden --values self-host/my-values.yaml --debug --timeout 5m
+
 helm uninstall bitwarden -n bitwarden
 kubectl delete namespace bitwarden
