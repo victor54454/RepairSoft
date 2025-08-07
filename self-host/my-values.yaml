@@ -58,8 +58,8 @@ general:
   webVersionOverride: ""
   # Disable account registration on web vault
   disableUserRegistration: "false"
-  # Comma-separated list of email addresses for Admin users
-  admins: "false"
+  # Dans cette section en peut mettre plusieurs admin a la suite toujours entre "" "" ""
+  admins: "merciervictor4@gmail.com"
   email:
     # Email address used for invitations, typically no-reply@smtp-host
     replyToEmail: "no_reply@smtp_host"
@@ -74,7 +74,7 @@ general:
     # Specify true to use SSL (not TLS) on port 25.
     smtpSslOverride: "false"
     # Specify true to force STARTTLS (Opportunistic TLS).
-    smtpStartTls: "false"
+    smtpStartTls: "true"
   sso:
     enforceSsoPolicyForAllUsers: false
   # Custom labels to add throughout the installation
@@ -85,7 +85,8 @@ general:
   # Specifies the access mode for persistent volume claims.  This should not be changed in most cases, and the allowable
   # values are only ReadWriteMany and ReadWriteOnce.  Please read https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
   # to better understand these options before changing this value.
-  volumeAccessMode: "ReadWriteOnce"
+  volumeAccessMode: "ReadWriteOnce" 
+  #ReadWriteOnce comme je suis en master worker
   # Set to true to allow communication between your server and our cloud system. Doing so enables billing and license sync.  Please see: https://bitwarden.com/help/self-host-an-organization/#step-4-setup-billing-and-license-sync
   enableCloudCommunication: false
   # Cloud region for sync.  Please see: https://bitwarden.com/help/families-for-enterprise-self-hosted/#step-1-enable-cloud-communication

@@ -13,14 +13,14 @@
 kubectl create namespace bitwarden
 
 kubectl create secret generic custom-secret -n bitwarden \
-    --from-literal=globalSettings__installation__id="ac0f4a39-1b6e-4b2f-80f7-b32f00d2a53e" \
-    --from-literal=globalSettings__installation__key="AsNEcGdR0SRXcGd2Gwyh" \
-    --from-literal=globalSettings__mail__smtp__username="test@example.com" \
-    --from-literal=globalSettings__mail__smtp__password="dummypassword123" \
-    --from-literal=globalSettings__yubico__clientId="dummy" \
-    --from-literal=globalSettings__yubico__key="dummy" \
-    --from-literal=globalSettings__hibpApiKey="dummy" \
-    --from-literal=SA_PASSWORD="MonSuperMotDePasseSQL2024!"
+  --from-literal=globalSettings__installation__id="ac0f4a39-1b6e-4b2f-80f7-b32f00d2a53e" \
+  --from-literal=globalSettings__installation__key="AsNEcGdR0SRXcGd2Gwyh" \
+  --from-literal=globalSettings__mail__smtp__username="merciervictor4@gmail.com" \
+  --from-literal=globalSettings__mail__smtp__password="kuln exxq dsea yidf" \
+  --from-literal=globalSettings__yubico__clientId="dummy" \
+  --from-literal=globalSettings__yubico__key="dummy" \
+  --from-literal=globalSettings__hibpApiKey="dummy" \
+  --from-literal=SA_PASSWORD="MonSuperMotDePasseSQL2024!"
 
 # Vérifier
 kubectl get secret -n bitwarden
@@ -28,7 +28,9 @@ kubectl get secret -n bitwarden
 
 
 helm upgrade bitwarden bitwarden/self-host --install --namespace bitwarden --values self-host/my-values.yaml --debug --timeout 10m
+helm uninstall bitwarden -n bitwarden
 kubectl delete namespace bitwarden
 
 
 victorvictor12341234Victor
+kuln exxq dsea yidf
