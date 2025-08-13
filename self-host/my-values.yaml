@@ -3,12 +3,12 @@ fullnameOverride: ""
 nameOverride: ""
 
 general:
-  domain: "192.168.10.167.nip.io"  
+  domain: "192.168.10.198.nip.io"  
   ingress:
     enabled: true
     className: "nginx"
     annotations:
-       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+       nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # http --> https 
        nginx.ingress.kubernetes.io/use-regex: "true"
        nginx.ingress.kubernetes.io/rewrite-target: /$1
        nginx.ingress.kubernetes.io/proxy-body-size: 500m

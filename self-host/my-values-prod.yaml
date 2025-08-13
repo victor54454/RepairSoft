@@ -3,8 +3,8 @@ fullnameOverride: ""
 nameOverride: ""
 
 general:
-  domain: "192.168.10.167.nip.io"  
-  ingress:
+  domain: "192.168.10.198.nip.io"  
+ingress:
     enabled: true
     className: "nginx"
     annotations:
@@ -15,6 +15,10 @@ general:
        nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
        nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
        nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+       nginx.ingress.kubernetes.io/server-snippet: |
+         if ($scheme = http) {
+           return 301 https://$host:4444$request_uri;
+         }
     labels: {}
     # Certificate options
     tls:
@@ -59,7 +63,7 @@ general:
   # Disable account registration on web vault
   disableUserRegistration: "true"
   # Dans cette section en peut mettre plusieurs admin a la suite toujours entre "" "" ""
-  admins: "merciervictor4@gmail.com"
+  admins: "questmk320@tuta.io quentin.gauny@repairsoft.fr maxime.pyram@repairsoft.fr"
   email:
     # Email address used for invitations, typically no-reply@smtp-host
     replyToEmail: "bitwarden@votre-domaine.com"
