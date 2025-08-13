@@ -13,7 +13,6 @@ kubectl create secret generic custom-secret -n bitwarden \
 kubectl get secret -n bitwarden
 
 
-
 helm upgrade bitwarden bitwarden/self-host --install --namespace bitwarden --values self-host/my-values.yaml --debug --timeout 10m
 
 helm uninstall bitwarden -n bitwarden
@@ -27,4 +26,3 @@ victorvictor12341234Victor
 kuln exxq dsea yidf
 
 https://bitwarden.com/fr-fr/help/self-host-with-helm/#exigences
-https://bitwarden.com/help/secrets-manager-overview/

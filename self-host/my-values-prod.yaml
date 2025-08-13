@@ -455,11 +455,11 @@ database:
   # The container is limited to the resources below.  Adjust for your environment.
   resources:
     requests:
-      memory: "2G"
-      cpu: "100m"
+      memory: "4G"
+      cpu: "200m"
     limits:
-      memory: "2G"
-      cpu: "500m"
+      memory: "4G"
+      cpu: "1"
 
   # The MSSQL volumes for the PVCs
   volume:

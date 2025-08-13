@@ -102,6 +102,8 @@ secrets:
   # Les secrets peuvent être créés soit via 'kubectl create secrets' soit en utilisant une classe de fournisseur de secrets. Si vous utilisez cette dernière, spécifiez le nom ici
   secretProviderClass:
 
+
+
 # Settings for individual service containers
 component:
   # The Admin component
@@ -151,11 +153,20 @@ component:
         cpu: "500m"
     # Specifies the strategy used to replace old Pods by new ones. The value can be "Recreate" or "RollingUpdate". "RollingUpdate" is the default value.
     deploymentStrategy: RollingUpdate
-    # This will set the Kubernetes container security context - SUPPRIMÉ LES CONFIGS PROBLÉMATIQUES
+    # This will set the Kubernetes container security context
     securityContext:
-    # This will set the Kubernetes pod security context - SUPPRIMÉ LES CONFIGS PROBLÉMATIQUES
+      runAsNonRoot: true
+      runAsUser: 1000
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
     podSecurityContext:
-    # Run the pod under a service account you create.  This is especially useful for OpenShift deployments
+      fsGroup: 1000
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+
     podServiceAccount:
   attachments:
     # Additional deployment labels
@@ -239,7 +250,7 @@ component:
     # Additional deployment labels
     labels: {}
     # Optionally place deployment on specifc nodes
-    nodeSelector: {}   
+    nodeSelector: {}
     # Optionally add taint tolerations
     tolerations: []
     # Image name, tag, and pull policy
@@ -455,11 +466,11 @@ database:
   # The container is limited to the resources below.  Adjust for your environment.
   resources:
     requests:
-      memory: "2G"
-      cpu: "100m"
+      memory: "4G"
+      cpu: "200m"
     limits:
-      memory: "2G"
-      cpu: "500m"
+      memory: "4G"
+      cpu: "1"
 
   # The MSSQL volumes for the PVCs
   volume:
@@ -515,3 +526,4 @@ rawManifests:
   #       xxxx
   #       -----END CERTIFICATE-----
   postInstall: []
+
