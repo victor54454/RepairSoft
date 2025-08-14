@@ -90,7 +90,7 @@ general:
   # Set to true to allow communication between your server and our cloud system. Doing so enables billing and license sync.  Please see: https://bitwarden.com/help/self-host-an-organization/#step-4-setup-billing-and-license-sync
   enableCloudCommunication: false
   # Cloud region for sync.  Please see: https://bitwarden.com/help/families-for-enterprise-self-hosted/#step-1-enable-cloud-communication
-  cloudRegion: "US"
+  cloudRegion: US
 
 # Specify the name of the shared storage class
 # This storage class requires ReadWriteMany.  You will need to provide your own storage class.  Storage classes with automatic volume previsioners are recommended.
@@ -155,18 +155,7 @@ component:
     deploymentStrategy: RollingUpdate
     # This will set the Kubernetes container security context
     securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-          - ALL
     podSecurityContext:
-      fsGroup: 1000
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-
     podServiceAccount:
   attachments:
     # Additional deployment labels

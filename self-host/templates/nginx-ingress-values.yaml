@@ -1,0 +1,34 @@
+controller:
+  # Utiliser hostNetwork pour accès direct aux ports personnalisés
+  hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+  
+  # Service désactivé car on utilise hostNetwork
+  service:
+    enabled: false
+  
+  # Configuration nginx pour écouter sur les ports personnalisés
+  config:
+    # Ports d'écoute personnalisés
+    http-port: "8080"
+    https-port: "4444"
+    # Force la redirection HTTP vers HTTPS
+    ssl-redirect: "true"
+    force-ssl-redirect: "true"
+    use-forwarded-headers: "true"
+  
+  # Modifier les ports du container
+  containerPort:
+    http: 8080
+    https: 4444
+  
+  # Métriques (optionnel)
+  metrics:
+    enabled: false
+  
+  # Logs
+  logLevel: 1
+
+# Désactiver l'admission webhook si pas nécessaire
+admissionWebhooks:
+  enabled: false
