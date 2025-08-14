@@ -3,8 +3,8 @@ fullnameOverride: ""
 nameOverride: ""
 
 general:
-  domain: "192.168.10.198.nip.io"  
-ingress:
+  domain: "192.168.10.167.nip.io"  
+  ingress:
     enabled: true
     className: "nginx"
     annotations:
@@ -15,10 +15,6 @@ ingress:
        nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
        nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
        nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
-       nginx.ingress.kubernetes.io/server-snippet: |
-         if ($scheme = http) {
-           return 301 https://$host:4444$request_uri;
-         }
     labels: {}
     # Certificate options
     tls:
@@ -61,12 +57,12 @@ ingress:
   coreVersionOverride: ""
   webVersionOverride: ""
   # Disable account registration on web vault
-  disableUserRegistration: "true"
+  disableUserRegistration: "false"
   # Dans cette section en peut mettre plusieurs admin a la suite toujours entre "" "" ""
-  admins: "questmk320@tuta.io quentin.gauny@repairsoft.fr maxime.pyram@repairsoft.fr"
+  admins: "merciervictor4@gmail.com"
   email:
     # Email address used for invitations, typically no-reply@smtp-host
-    replyToEmail: "bitwarden@votre-domaine.com"
+    replyToEmail: "no_reply@smtp_host"
     # Your SMTP server hostname (recommended) or IP address
     smtpHost: "smtp.gmail.com"
     # The SMTP port used by the SMTP server
@@ -105,6 +101,8 @@ secrets:
   secretName: custom-secret
   # Les secrets peuvent être créés soit via 'kubectl create secrets' soit en utilisant une classe de fournisseur de secrets. Si vous utilisez cette dernière, spécifiez le nom ici
   secretProviderClass:
+
+
 
 # Settings for individual service containers
 component:
@@ -148,16 +146,16 @@ component:
     # The pod resource requirements.  You can adjust these up and down for your environment
     resources:
       requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
         memory: "256Mi"
         cpu: "200m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
     # Specifies the strategy used to replace old Pods by new ones. The value can be "Recreate" or "RollingUpdate". "RollingUpdate" is the default value.
     deploymentStrategy: RollingUpdate
-    # This will set the Kubernetes container security context - SUPPRIMÉ LES CONFIGS PROBLÉMATIQUES
+    # This will set the Kubernetes container security context
     securityContext:
-    # This will set the Kubernetes pod security context - SUPPRIMÉ LES CONFIGS PROBLÉMATIQUES
+    # This will set the Kubernetes pod security context
     podSecurityContext:
     # Run the pod under a service account you create.  This is especially useful for OpenShift deployments
     podServiceAccount:
@@ -243,7 +241,7 @@ component:
     # Additional deployment labels
     labels: {}
     # Optionally place deployment on specifc nodes
-    nodeSelector: {}   
+    nodeSelector: {}
     # Optionally add taint tolerations
     tolerations: []
     # Image name, tag, and pull policy
@@ -252,11 +250,11 @@ component:
     # The pod resource requirements.  You can adjust these up and down for your environment
     resources:
       requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
         memory: "256Mi"
         cpu: "200m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
     # Specifies the strategy used to replace old Pods by new ones. The value can be "Recreate" or "RollingUpdate". "RollingUpdate" is the default value.
     deploymentStrategy: RollingUpdate
     # This will set the Kubernetes container security context
@@ -402,7 +400,7 @@ volume:
     # accessMode: ReadWriteOnce
     # Override the storageClass specified in sharedStorageClassName
     # storageClass: "shared-storage"
-    size: 5Gi
+    size: 1Gi
     labels: {}
   licenses:
     # Use an existing PVC by specifying the name.
@@ -422,7 +420,7 @@ volume:
     # accessMode: ReadWriteOnce
     # Override the storageClass specified in sharedStorageClassName
     # storageClass: "shared-storage"
-    size: 2Gi
+    size: 1Gi
     labels: {}
   caCertificates:
     # Extra root certificates are disabled by default
@@ -459,11 +457,11 @@ database:
   # The container is limited to the resources below.  Adjust for your environment.
   resources:
     requests:
-      memory: "4G"
-      cpu: "200m"
+      memory: "2G"
+      cpu: "100m"
     limits:
-      memory: "4G"
-      cpu: "1"
+      memory: "2G"
+      cpu: "500m"
 
   # The MSSQL volumes for the PVCs
   volume:
@@ -474,7 +472,7 @@ database:
       # accessMode: ReadWriteOnce
       # Override the storageClass specified in sharedStorageClassName
       # storageClass: "shared-storage"
-      size: 10Gi
+      size: 1Gi
       labels: {}
     data:
       # Use an existing PVC by specifying the name.
@@ -483,7 +481,7 @@ database:
       # accessMode: ReadWriteOnce
       # Override the storageClass specified in sharedStorageClassName
       # storageClass: "shared-storage"
-      size: 20Gi
+      size: 10Gi
       labels: {}
     log:
       # Use an existing PVC by specifying the name.
@@ -492,7 +490,7 @@ database:
       # accessMode: ReadWriteOnce
       # Override the storageClass specified in sharedStorageClassName
       # storageClass: "shared-storage"
-      size: 5Gi
+      size: 10Gi
       labels: {}
   # Specifies the strategy used to replace old Pods by new ones. The value can be "OnDelete" or "RollingUpdate". "OnDelete" is the default value.
   # When set to OnDelete, the SQL pod will not be recreated automatically on update.  It must be manually deleted to update.
